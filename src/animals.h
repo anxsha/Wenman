@@ -7,12 +7,20 @@
 
 #include <vector>
 
+// Declaration of needed Square class
+class Square;
+
+/// Doc this function
+std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index);
+
 class MaleWolf {
  public:
-  double fat() const;
-  int grid_position() const;
-  int male_wolf_id() const;
-  void Move();
+  [[nodiscard]] double fat() const;
+  [[nodiscard]] int grid_position() const;
+  [[nodiscard]] int male_wolf_id() const;
+  void Move(int columns, int rows);
+
+  MaleWolf(int pos, std::vector<MaleWolf>& v);
 
  private:
   double fat_;
@@ -23,10 +31,12 @@ class MaleWolf {
 
 class FemaleWolf {
  public:
-  double fat() const;
-  int grid_position() const;
-  int female_wolf_id() const;
-  void Move();
+  [[nodiscard]] double fat() const;
+  [[nodiscard]] int grid_position() const;
+  [[nodiscard]] int female_wolf_id() const;
+  void Move(int columns, int rows);
+
+  FemaleWolf(int pos, std::vector<FemaleWolf>& v);
 
  private:
   double fat_;
@@ -36,9 +46,9 @@ class FemaleWolf {
 
 class Bunny {
  public:
-  int grid_position() const;
-  int bunny_id() const;
-  void Move();
+  [[nodiscard]] int grid_position() const;
+  [[nodiscard]] int bunny_id() const;
+  void Move(int columns, int rows, std::vector<Square>& vs, std::vector<uint8_t>& map_tiles);
 
   Bunny(int pos, std::vector<Bunny>& v);
 

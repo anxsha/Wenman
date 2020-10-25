@@ -13,9 +13,9 @@
 class GraphicalGrid : public sf::Drawable, public sf::Transformable {
  public:
   bool Load(const std::string& tileset_filename, sf::Vector2u tile_size,
-            std::vector<int> tiles, int width, int height);
+            std::vector<uint8_t> tiles, int width, int height);
 
-  void Update(std::vector<int> tiles);
+  void Update(std::vector<uint8_t> tiles);
 
  private:
   int width_;

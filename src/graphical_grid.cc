@@ -6,7 +6,7 @@
 
 bool GraphicalGrid::Load(const std::string &tileset_filename,
                          sf::Vector2u tile_size,
-                         std::vector<int> tiles,
+                         std::vector<uint8_t> tiles,
                          int width,
                          int height) {
   // load the tileset texture
@@ -49,7 +49,7 @@ bool GraphicalGrid::Load(const std::string &tileset_filename,
 
   return true;
 }
-void GraphicalGrid::Update(std::vector<int> tiles) {
+void GraphicalGrid::Update(std::vector<uint8_t> tiles) {
 
   // populate the vertex array, with one quad per tile
   for (int i = 0; i < width_; ++i) {

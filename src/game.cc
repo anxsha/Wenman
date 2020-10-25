@@ -2,58 +2,11 @@
 // Created by Jakub Molek on 22/10/2020.
 //
 #include <iostream>
+#include <random>
 
 #include "game.h"
 
-std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index) {
-  std::vector<int> v{};
-  int row = index / size_x;
-  int col = index % size_x;
-
-  // find upper-left neighbour
-  if (col > 0 && row > 0) {
-    int upper_left = (row - 1) * size_x + (col - 1);
-    v.push_back(upper_left);
-  }
-  // find mid-left neighbour
-  if (col > 0) {
-    int mid_left = row * size_x + (col - 1);
-    v.push_back(mid_left);
-  }
-  // find lower-left neighbour
-  if (col > 0 && row < (size_y - 1)) {
-    int lower_left = (row + 1) * size_x + (col - 1);
-    v.push_back(lower_left);
-  }
-  // find upper neighbour
-  if (row > 0) {
-    int upper = (row - 1) * size_x + col;
-    v.push_back(upper);
-  }
-  // find lower neighbour
-  if (row < (size_y - 1)) {
-    int lower = (row + 1) * size_x + col;
-    v.push_back(lower);
-  }
-  // find upper-right neighbour
-  if (row > 0 && col < (size_x - 1)) {
-    int upper_right = (row - 1) * size_x + (col + 1);
-    v.push_back(upper_right);
-  }
-  // find mid-right neighbour
-  if (col < (size_x - 1)) {
-    int mid_right = row * size_x + (col + 1);
-    v.push_back(mid_right);
-  }
-  // find lower-right neighbour
-  if (row < (size_y - 1)) {
-    int lower_right = (row + 1) * size_x + (col + 1);
-    v.push_back(lower_right);
-  }
-  return v;
-}
-
-Square::Square(std::vector<Square>& v) {
+Square::Square(std::vector<Square> &v) {
   bunnies_ = 0;
   male_wolves_ = 0;
   female_wolves_ = 0;
@@ -64,9 +17,15 @@ int Square::bunnies() const { return bunnies_; }
 int Square::male_wolves() const { return male_wolves_; }
 int Square::female_wolves() const { return female_wolves_; }
 int Square::vector_index() const { return vector_index_; }
+void Square::AddBunny() { ++bunnies_; }
+void Square::RemoveBunny() { --bunnies_; }
+void Square::AddFemaleWolf() { ++female_wolves_; }
+void Square::AddMaleWolf() { ++male_wolves_; }
 
 Game::Game(int columns, int rows) {
-  map_tiles = std::vector<int>(rows * columns);
+  columns_ = columns;
+  rows_ = rows;
+  map_tiles = std::vector<uint8_t>(rows * columns);
   for (int i = 0; i < map_tiles.size(); ++i) {
     squares_vector.emplace_back(Square(squares_vector));
   }
@@ -80,6 +39,26 @@ Game::Game(int columns, int rows) {
 void Game::Run() {
   sf::RenderWindow window(sf::VideoMode(1402, 840), "Wenman");
   window.setFramerateLimit(20);
+  CreateBunny(90);
+  CreateBunny(71);
+  for (auto x : bunnies_vector){
+    std::cout << "Bunny id: " << x.bunny_id() << ", ";
+    std::cout << "Bunny pos: " << x.grid_position() << '\n';
+  }
+  CreateWolf(90);
+  CreateWolf(90);
+  CreateWolf(90);
+  CreateWolf(91);
+  CreateWolf(91);
+  CreateWolf(92);
+  CreateWolf(93);
+  CreateWolf(94);
+  bunnies_vector[0].Move(columns_, rows_, squares_vector, map_tiles);
+  for (auto x : bunnies_vector){
+    std::cout << "Bunny id: " << x.bunny_id() << ", ";
+    std::cout << "Bunny pos: " << x.grid_position() << '\n';
+  }
+  square_map.Update(map_tiles);
   while (window.isOpen()) {
     sf::Event event{};
 
@@ -91,6 +70,24 @@ void Game::Run() {
     window.clear();
     window.draw(square_map);
     window.display();
+  }
+}
+void Game::CreateBunny(int pos) {
+  bunnies_vector.emplace_back(Bunny(pos, bunnies_vector));
+  squares_vector[pos].AddBunny();
+  map_tiles[pos] |= 0b00000001u;
+}
+void Game::CreateWolf(int pos) {
+  std::random_device rd;
+  std::uniform_int_distribution<int> distribution(0, 1);
+  if (distribution(rd)) {
+    female_wolves_vector.emplace_back(FemaleWolf(pos, female_wolves_vector));
+    squares_vector[pos].AddFemaleWolf();
+    map_tiles[pos] |= 0b00000010u;
+  } else {
+    male_wolves_vector.emplace_back(MaleWolf(pos, male_wolves_vector));
+    squares_vector[pos].AddMaleWolf();
+    map_tiles[pos] |= 0b00000100u;
   }
 }
 

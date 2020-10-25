@@ -12,9 +12,6 @@
 #include "graphical_grid.h"
 #include "animals.h"
 
-/// Doc this function
-std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index);
-
 /// Docs of square class
 class Square {
  public:
@@ -22,6 +19,10 @@ class Square {
   int male_wolves() const;
   int female_wolves() const;
   int vector_index() const;
+  void AddBunny();
+  void RemoveBunny();
+  void AddFemaleWolf();
+  void AddMaleWolf();
 
   explicit Square(std::vector<Square>& v); ///< Receives
 
@@ -35,7 +36,7 @@ class Square {
 
 class Game {
  public:
-  std::vector<int> map_tiles;
+  std::vector<uint8_t> map_tiles;
   sf::Font font;
   GraphicalGrid square_map;
 
@@ -44,7 +45,12 @@ class Game {
   std::vector<FemaleWolf> female_wolves_vector {};
   std::vector<Square> squares_vector {};
 
+  int columns_;
+  int rows_;
+
   Game(int columns, int rows);
+  void CreateBunny(int pos);
+  void CreateWolf(int pos);
   void Run();
 };
 
