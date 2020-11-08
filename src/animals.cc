@@ -59,22 +59,22 @@ Bunny::Bunny(int pos, std::vector<Bunny> &v) {
   grid_position_ = pos;
   bunny_id_ = v.size();
 }
-int Bunny::grid_position() const { return grid_position_; }
-int Bunny::bunny_id() const { return bunny_id_; }
+int Bunny::GridPosition() const { return grid_position_; }
+int Bunny::BunnyId() const { return bunny_id_; }
 void Bunny::Move(int columns, int rows, std::vector<Square>& vs, std::vector<uint8_t>& map_tiles) {
-  //TODO create bunny 20%
   std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
   std::random_device rd;
-  std::uniform_int_distribution<int> distribution(0, possible_moves.size() - 1);
-  int rd_number = distribution(rd);
+  // make a random correct move
+  std::uniform_int_distribution<int> moves_distribution(0, possible_moves.size() - 1);
+  int rd_number = moves_distribution(rd);
   int random_move = possible_moves[rd_number];
   vs[grid_position_].RemoveBunny();
-  if (vs[grid_position_].bunnies() < 1) {
-    map_tiles[grid_position_] &= 0b11111110;
+  if (vs[grid_position_].Bunnies() < 1) {
+    map_tiles[grid_position_] &= 0b11111110u;
   }
   grid_position_ = random_move;
   vs[grid_position_].AddBunny();
-  map_tiles[grid_position_] |= 0b00000001;
+  map_tiles[grid_position_] |= 0b00000001u;
 }
 
 FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf> &v) {
@@ -82,15 +82,15 @@ FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf> &v) {
   female_wolf_id_ = v.size();
   fat_ = 1.0;
 }
-double FemaleWolf::fat() const { return fat_; }
-int FemaleWolf::grid_position() const { return grid_position_; }
-int FemaleWolf::female_wolf_id() const { return female_wolf_id_; }
+double FemaleWolf::Fat() const { return fat_; }
+int FemaleWolf::GridPosition() const { return grid_position_; }
+int FemaleWolf::FemaleWolfId() const { return female_wolf_id_; }
 
 MaleWolf::MaleWolf(int pos, std::vector<MaleWolf> &v) {
   grid_position_ = pos;
   male_wolf_id_ = v.size();
   fat_ = 1.0;
 }
-double MaleWolf::fat() const { return fat_; }
-int MaleWolf::grid_position() const { return grid_position_; }
-int MaleWolf::male_wolf_id() const { return male_wolf_id_; }
+double MaleWolf::Fat() const { return fat_; }
+int MaleWolf::GridPosition() const { return grid_position_; }
+int MaleWolf::MaleWolfId() const { return male_wolf_id_; }

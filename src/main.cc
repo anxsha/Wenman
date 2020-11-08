@@ -1,8 +1,8 @@
 #include "game.h"
 
 int main() {
-  Game Simulation(20, 14);
-  Simulation.Run();
+  Game simulation(20, 14);
+  simulation.Run();
   return 0;
 }
 
