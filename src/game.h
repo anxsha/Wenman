@@ -33,6 +33,8 @@ class Square {
   void RemoveBunny();
   /// Increments the number of female wolves on this square.
   void AddFemaleWolf();
+  /// Decrements the number of female wolves on this square.
+  void RemoveFemaleWolf();
   /// Increments the number of male wolves on this square.
   void AddMaleWolf();
   ///
@@ -90,6 +92,7 @@ class Game {
   void CreateBunny(int pos);
   void CreateWolf(int pos);
   void BunnyTurnActions();
+  void DrawAnimalsCount(sf::RenderWindow& window);
   void Run();
 };
 

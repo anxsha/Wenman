@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include <random>
+#include <string>
 
 #include "game.h"
 
@@ -20,6 +21,7 @@ int Square::VectorIndex() const { return vector_index_; }
 void Square::AddBunny() { ++bunnies_; }
 void Square::RemoveBunny() { --bunnies_; }
 void Square::AddFemaleWolf() { ++female_wolves_; }
+void Square::RemoveFemaleWolf() { --female_wolves_; }
 void Square::AddMaleWolf() { ++male_wolves_; }
 
 Game::Game(int columns, int rows) {
@@ -34,31 +36,6 @@ Game::Game(int columns, int rows) {
   }
   if (!square_map.Load("../resources/tileset1.png", sf::Vector2u(60, 60), map_tiles, columns, rows)) {
     std::exit(1);
-  }
-}
-void Game::Run() {
-  sf::RenderWindow window(sf::VideoMode(1402, 840), "Wenman");
-  window.setFramerateLimit(20);
-  sf::Clock clock;
-
-  CreateBunny(0);
-
-  while (window.isOpen()) {
-    sf::Event event{};
-
-    while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
-
-    BunnyTurnActions();
-
-    square_map.Update(map_tiles);
-    window.clear();
-    window.draw(square_map);
-    window.display();
-    while (clock.getElapsedTime().asSeconds() < 5);
-    clock.restart();
   }
 }
 void Game::CreateBunny(int pos) {
@@ -92,5 +69,54 @@ void Game::BunnyTurnActions() {
     bunny.Move(columns_, rows_, squares_vector, map_tiles);
   }
 }
+void Game::DrawAnimalsCount(sf::RenderWindow& window) {
+  sf::Text text;
+  text.setFont(font);
+  text.setCharacterSize(14);
+  text.setFillColor(sf::Color::Black);
+  for (auto& square : squares_vector) {
+    if (square.Bunnies() > 1) {
+      int row = square.VectorIndex() / columns_;
+      int col = square.VectorIndex() % columns_;
+      text.setPosition(60 * col + 6.f, 60 * row + 5.f);
+      text.setString(std::to_string(square.Bunnies()));
+      window.draw(text);
+    }
+  }
+}
+void Game::Run() {
+  sf::RenderWindow window(sf::VideoMode(1402, 840), "Wenman");
+  window.setFramerateLimit(5);
+  sf::Clock clock;
 
+  CreateBunny(0);
+  CreateWolf(24);
 
+  while (window.isOpen()) {
+    sf::Event event{};
+
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
+
+    BunnyTurnActions();
+    square_map.Update(map_tiles);
+    window.clear();
+    window.draw(square_map);
+    DrawAnimalsCount(window);
+    window.display();
+    while (clock.getElapsedTime().asSeconds() < 2);
+    for (auto& wf : female_wolves_vector) {
+      wf.Move(columns_, rows_, squares_vector, map_tiles, bunnies_vector, female_wolves_vector);
+    }
+
+    square_map.Update(map_tiles);
+    window.clear();
+    window.draw(square_map);
+    DrawAnimalsCount(window);
+    window.display();
+    while (clock.getElapsedTime().asSeconds() < 7);
+    clock.restart();
+  }
+}
