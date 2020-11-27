@@ -37,6 +37,8 @@ class Square {
   void RemoveFemaleWolf();
   /// Increments the number of male wolves on this square.
   void AddMaleWolf();
+  /// Decrements the number of male wolves on this square.
+  void RemoveMaleWolf();
   ///
   /// The constructor sets the number of all animals on this square to 0.
   /// Receives the Game's vector which consists of all squares as a parameter to identify
@@ -91,8 +93,10 @@ class Game {
   Game(int columns, int rows);
   void CreateBunny(int pos);
   void CreateWolf(int pos);
-  void BunnyTurnActions();
+  void BunnyTurnActions(sf::RenderWindow& window);
+  void WolfTurnActions(sf::RenderWindow& window);
   void DrawAnimalsCount(sf::RenderWindow& window);
+  void SetInitialState();
   void Run();
 };
 

@@ -11,6 +11,7 @@
 class Square;
 class Game;
 class Bunny;
+class FemaleWolf;
 
 /// Doc this function
 std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index);
@@ -20,7 +21,9 @@ class MaleWolf {
   [[nodiscard]] double Fat() const;
   [[nodiscard]] int GridPosition() const;
   [[nodiscard]] int MaleWolfId() const;
-  void Move(int columns, int rows);
+  int Move(int columns, int rows, std::vector<Square>& vs,
+            std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
+            std::vector<MaleWolf>& vmw, std::vector<FemaleWolf>& vfw);
 
   MaleWolf(int pos, std::vector<MaleWolf>& v);
 
@@ -36,7 +39,9 @@ class FemaleWolf {
   [[nodiscard]] double Fat() const;
   [[nodiscard]] int GridPosition() const;
   [[nodiscard]] int FemaleWolfId() const;
-  void Move(int columns, int rows, std::vector<Square>& vs,
+  [[nodiscard]] int Gestation() const;
+  int HandleGestation(bool set_pregnancy = false);
+  int Move(int columns, int rows, std::vector<Square>& vs,
             std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
             std::vector<FemaleWolf>& vfw);
 
@@ -46,6 +51,7 @@ class FemaleWolf {
   double fat_;
   int grid_position_;
   int female_wolf_id_;
+  int gestation_;
 };
 
 class Bunny {

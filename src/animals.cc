@@ -8,7 +8,7 @@
 #include "animals.h"
 
 std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index) {
-  std::vector<int> v{};
+  std::vector<int> v {};
   int row = index / size_x;
   int col = index % size_x;
 
@@ -63,7 +63,7 @@ int Bunny::GridPosition() const { return grid_position_; }
 int Bunny::BunnyId() const { return bunny_id_; }
 void Bunny::Move(int columns, int rows, std::vector<Square>& vs, std::vector<uint8_t>& map_tiles) {
   std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
-  std::random_device rd{};
+  std::random_device rd {};
   // make a random correct move
   std::uniform_int_distribution<int> moves_distribution(0, possible_moves.size() - 1);
   int rd_number = moves_distribution(rd);
@@ -81,20 +81,35 @@ FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf>& v) {
   grid_position_ = pos;
   female_wolf_id_ = v.size();
   fat_ = 1.0;
+  gestation_ = 0;
 }
 double FemaleWolf::Fat() const { return fat_; }
 int FemaleWolf::GridPosition() const { return grid_position_; }
 int FemaleWolf::FemaleWolfId() const { return female_wolf_id_; }
-void FemaleWolf::Move(int columns,
-                      int rows,
-                      std::vector<Square>& vs,
-                      std::vector<uint8_t>& map_tiles,
-                      std::vector<Bunny>& vb,
-                      std::vector<FemaleWolf>& vfw) {
+int FemaleWolf::Gestation() const { return gestation_; }
+int FemaleWolf::HandleGestation(bool set_pregnancy) {
+  if (set_pregnancy && !gestation_) {
+    gestation_ = 2;
+  } else {
+    if (gestation_ == 2) {
+      --gestation_;
+    } else if (gestation_ == 1) {
+      gestation_ = 0;
+      return 1;
+    }
+  }
+  return 0;
+}
+int FemaleWolf::Move(int columns,
+                     int rows,
+                     std::vector<Square>& vs,
+                     std::vector<uint8_t>& map_tiles,
+                     std::vector<Bunny>& vb,
+                     std::vector<FemaleWolf>& vfw) {
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
-    int move_square{};
+    int move_square {};
     bool neighb_bunny = false;
     for (auto& move : possible_moves) {
       if (vs.at(move).Bunnies() > 0) {
@@ -104,7 +119,7 @@ void FemaleWolf::Move(int columns,
       }
     }
     if (!neighb_bunny) {
-      std::random_device rd{};
+      std::random_device rd {};
       // make a random correct move
       std::uniform_int_distribution<int> moves_distribution(0, possible_moves.size() - 1);
       int rd_number = moves_distribution(rd);
@@ -149,7 +164,9 @@ void FemaleWolf::Move(int columns,
     for (int i = ix; i < vfw.size(); ++i) {
       vfw.at(i).female_wolf_id_ = i;
     }
+    return 1;
   }
+  return 0;
 }
 
 MaleWolf::MaleWolf(int pos, std::vector<MaleWolf>& v) {
@@ -160,3 +177,101 @@ MaleWolf::MaleWolf(int pos, std::vector<MaleWolf>& v) {
 double MaleWolf::Fat() const { return fat_; }
 int MaleWolf::GridPosition() const { return grid_position_; }
 int MaleWolf::MaleWolfId() const { return male_wolf_id_; }
+int MaleWolf::Move(int columns,
+                   int rows,
+                   std::vector<Square>& vs,
+                   std::vector<uint8_t>& map_tiles,
+                   std::vector<Bunny>& vb,
+                   std::vector<MaleWolf>& vmw,
+                   std::vector<FemaleWolf>& vfw) {
+  fat_ -= 0.1;
+  if (fat_ > 0) {
+    std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
+    bool neighb_bunny = false;
+    bool neighb_female_wolf = false;
+    std::vector<int> neighb_female_wolf_squares {};
+    std::vector<int> neighb_bunny_squares {};
+    for (auto& move : possible_moves) {
+      if (vs.at(move).Bunnies() > 0) {
+        neighb_bunny_squares.push_back(move);
+        neighb_bunny = true;
+      }
+      if (vs.at(move).FemaleWolves() > 0) {
+        neighb_female_wolf_squares.push_back(move);
+        neighb_female_wolf = true;
+      }
+    }
+    if (neighb_bunny) { // a neighbouring bunny exists -> gets eaten
+      std::random_device rd {};
+      std::uniform_int_distribution<int> moves_distribution(0, neighb_bunny_squares.size() - 1);
+      int rd_number = moves_distribution(rd);
+      int move_square = neighb_bunny_squares.at(rd_number);
+      vs.at(grid_position_).RemoveMaleWolf();
+      if (vs.at(grid_position_).MaleWolves() < 1) {
+        map_tiles.at(grid_position_) &= 0b11111011u;
+      }
+      grid_position_ = move_square;
+      vs.at(grid_position_).AddMaleWolf();
+      map_tiles.at(grid_position_) |= 0b00000100u;
+      // Eating the bunny
+      int i = 0;
+      for (auto& bunny : vb) {
+        if (bunny.GridPosition() == move_square) {
+          vs.at(move_square).RemoveBunny();
+          if (vs.at(move_square).Bunnies() < 1) {
+            map_tiles.at(move_square) &= 0b11111110u;
+          }
+          vb.erase(vb.begin() + i);
+          fat_ += 1.0;
+          break;
+        }
+        ++i;
+      }
+    } else if (neighb_female_wolf) {
+      std::random_device rd {};
+      std::uniform_int_distribution<int> moves_distribution(0, neighb_female_wolf_squares.size() - 1);
+      int rd_number = moves_distribution(rd);
+      int move_square = neighb_female_wolf_squares.at(rd_number);
+      vs.at(grid_position_).RemoveMaleWolf();
+      if (vs.at(grid_position_).MaleWolves() < 1) {
+        map_tiles.at(grid_position_) &= 0b11111011u;
+      }
+      grid_position_ = move_square;
+      vs.at(grid_position_).AddMaleWolf();
+      map_tiles.at(grid_position_) |= 0b00000100u;
+
+      for (auto& fw : vfw) {
+        if (fw.GridPosition() == move_square && !fw.Gestation()) {
+          fw.HandleGestation(true);
+          break;
+        }
+      }
+
+    } else {
+      std::random_device rd {};
+      // make a random correct move
+      std::uniform_int_distribution<int> moves_distribution(0, possible_moves.size() - 1);
+      int rd_number = moves_distribution(rd);
+      int random_move = possible_moves.at(rd_number);
+      vs.at(grid_position_).RemoveMaleWolf();
+      if (vs.at(grid_position_).MaleWolves() < 1) {
+        map_tiles.at(grid_position_) &= 0b11111011u;
+      }
+      grid_position_ = random_move;
+      vs.at(grid_position_).AddMaleWolf();
+      map_tiles.at(grid_position_) |= 0b00000100u;
+    }
+  } else {
+    int ix = male_wolf_id_;
+    vs.at(grid_position_).RemoveMaleWolf();
+    if (vs.at(grid_position_).MaleWolves() < 1) {
+      map_tiles.at(grid_position_) &= 0b11111011u;
+    }
+    vmw.erase(vmw.begin() + male_wolf_id_);
+    for (int i = ix; i < vmw.size(); ++i) {
+      vmw.at(i).male_wolf_id_ = i;
+    }
+    return 1;
+  }
+  return 0;
+}
