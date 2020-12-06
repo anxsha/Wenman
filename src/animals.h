@@ -7,7 +7,6 @@
 
 #include <vector>
 
-// Declaration of needed Square class
 class Square;
 class Game;
 class Bunny;
@@ -25,7 +24,7 @@ class MaleWolf {
             std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
             std::vector<MaleWolf>& vmw, std::vector<FemaleWolf>& vfw);
 
-  MaleWolf(int pos, std::vector<MaleWolf>& v);
+  MaleWolf(int pos, std::vector<MaleWolf>& v, double initial_fat = 1.0);
 
  private:
   double fat_;
@@ -45,7 +44,7 @@ class FemaleWolf {
             std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
             std::vector<FemaleWolf>& vfw);
 
-  FemaleWolf(int pos, std::vector<FemaleWolf>& v);
+  FemaleWolf(int pos, std::vector<FemaleWolf>& v, double initial_fat = 1.0);
 
  private:
   double fat_;

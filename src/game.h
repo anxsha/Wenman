@@ -92,7 +92,7 @@ class Game {
   ///
   Game(int columns, int rows);
   void CreateBunny(int pos);
-  void CreateWolf(int pos);
+  void CreateWolf(int pos, double fat = 1.0);
   void BunnyTurnActions(sf::RenderWindow& window);
   void WolfTurnActions(sf::RenderWindow& window);
   void DrawAnimalsCount(sf::RenderWindow& window);

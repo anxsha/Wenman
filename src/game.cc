@@ -44,15 +44,15 @@ void Game::CreateBunny(int pos) {
   squares_vector[pos].AddBunny();
   map_tiles[pos] |= 0b00000001u;
 }
-void Game::CreateWolf(int pos) {
+void Game::CreateWolf(int pos, double fat) {
   std::random_device rd;
   std::uniform_int_distribution<int> distribution(0, 1);
   if (distribution(rd)) {
-    female_wolves_vector.emplace_back(pos, female_wolves_vector);
+    female_wolves_vector.emplace_back(pos, female_wolves_vector, fat);
     squares_vector[pos].AddFemaleWolf();
     map_tiles[pos] |= 0b00000010u;
   } else {
-    male_wolves_vector.emplace_back(pos, male_wolves_vector);
+    male_wolves_vector.emplace_back(pos, male_wolves_vector, fat);
     squares_vector[pos].AddMaleWolf();
     map_tiles[pos] |= 0b00000100u;
   }
@@ -80,7 +80,7 @@ void Game::BunnyTurnActions(sf::RenderWindow& window) {
 }
 void Game::WolfTurnActions(sf::RenderWindow& window) {
   sf::Clock clock;
-  std::vector<int> wolves_birth_squares {};
+  std::vector<std::tuple<int, double>> wolves_birth_data {};
 
   for (auto [i, v_size] = std::tuple{0, male_wolves_vector.size()}; i < v_size; ++i) {
     if (male_wolves_vector.at(i).Move(columns_, rows_, squares_vector, map_tiles, bunnies_vector, male_wolves_vector, female_wolves_vector)) {
@@ -103,7 +103,7 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
       v_size = female_wolves_vector.size();
     } else {
       if (female_wolves_vector.at(i).HandleGestation()) {
-        wolves_birth_squares.push_back(female_wolves_vector.at(i).GridPosition());
+        wolves_birth_data.emplace_back(female_wolves_vector.at(i).GridPosition(), female_wolves_vector.at(i).Fat());
       }
     }
   }
@@ -116,8 +116,8 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   while (clock.getElapsedTime().asSeconds() < 1);
   clock.restart();
 
-  for (auto& i : wolves_birth_squares) {
-    CreateWolf(i);
+  for (auto& el : wolves_birth_data) {
+    CreateWolf(std::get<0>(el), std::get<1>(el));
   }
   square_map.Update(map_tiles);
   window.clear();
@@ -163,10 +163,22 @@ void Game::SetInitialState() {
   CreateWolf(24);
   CreateWolf(24);
   CreateWolf(24);
+  CreateWolf(124);
+  CreateWolf(154);
+  CreateWolf(184);
+  CreateWolf(204);
   CreateBunny(0);
   CreateBunny(33);
   CreateBunny(40);
   CreateBunny(0);
+  CreateBunny(150);
+  CreateBunny(150);
+  CreateBunny(190);
+  CreateBunny(250);
+  CreateBunny(279);
+  CreateBunny(279);
+  CreateBunny(219);
+  CreateBunny(239);
 
 }
 void Game::Run() {

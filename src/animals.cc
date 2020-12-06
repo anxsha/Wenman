@@ -48,7 +48,7 @@ std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index) {
     v.push_back(mid_right);
   }
   // find lower-right neighbour
-  if (row < (size_y - 1)) {
+  if (row < (size_y - 1) && col < (size_x - 1)) {
     int lower_right = (row + 1) * size_x + (col + 1);
     v.push_back(lower_right);
   }
@@ -77,10 +77,10 @@ void Bunny::Move(int columns, int rows, std::vector<Square>& vs, std::vector<uin
   map_tiles.at(grid_position_) |= 0b00000001u;
 }
 
-FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf>& v) {
+FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf>& v, double initial_fat) {
   grid_position_ = pos;
   female_wolf_id_ = v.size();
-  fat_ = 1.0;
+  fat_ = initial_fat;
   gestation_ = 0;
 }
 double FemaleWolf::Fat() const { return fat_; }
@@ -109,13 +109,12 @@ int FemaleWolf::Move(int columns,
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
-    int move_square {};
+    std::vector<int> neighb_bunny_squares {};
     bool neighb_bunny = false;
     for (auto& move : possible_moves) {
       if (vs.at(move).Bunnies() > 0) {
-        move_square = move;
+        neighb_bunny_squares.push_back(move);
         neighb_bunny = true;
-        break;
       }
     }
     if (!neighb_bunny) {
@@ -136,19 +135,23 @@ int FemaleWolf::Move(int columns,
       if (vs.at(grid_position_).FemaleWolves() < 1) {
         map_tiles.at(grid_position_) &= 0b11111101u;
       }
-      grid_position_ = move_square;
+      std::random_device rd {};
+      std::uniform_int_distribution<int> moves_distribution(0, neighb_bunny_squares.size() - 1);
+      int rd_number = moves_distribution(rd);
+      int random_move = neighb_bunny_squares.at(rd_number);
+      grid_position_ = random_move;
       vs.at(grid_position_).AddFemaleWolf();
       map_tiles.at(grid_position_) |= 0b00000010u;
       // Eating the bunny
       int i = 0;
       for (auto& bunny : vb) {
-        if (bunny.GridPosition() == move_square) {
-          vs.at(move_square).RemoveBunny();
-          if (vs.at(move_square).Bunnies() < 1) {
-            map_tiles.at(move_square) &= 0b11111110u;
+        if (bunny.GridPosition() == random_move) {
+          vs.at(random_move).RemoveBunny();
+          if (vs.at(random_move).Bunnies() < 1) {
+            map_tiles.at(random_move) &= 0b11111110u;
           }
           vb.erase(vb.begin() + i);
-          fat_ += 1.0;
+          fat_ <= 1 ? fat_ += 1.0 : fat_ = 2.0;
           break;
         }
         ++i;
@@ -169,10 +172,10 @@ int FemaleWolf::Move(int columns,
   return 0;
 }
 
-MaleWolf::MaleWolf(int pos, std::vector<MaleWolf>& v) {
+MaleWolf::MaleWolf(int pos, std::vector<MaleWolf>& v, double initial_fat) {
   grid_position_ = pos;
   male_wolf_id_ = v.size();
-  fat_ = 1.0;
+  fat_ = initial_fat;
 }
 double MaleWolf::Fat() const { return fat_; }
 int MaleWolf::GridPosition() const { return grid_position_; }
@@ -205,24 +208,25 @@ int MaleWolf::Move(int columns,
       std::random_device rd {};
       std::uniform_int_distribution<int> moves_distribution(0, neighb_bunny_squares.size() - 1);
       int rd_number = moves_distribution(rd);
-      int move_square = neighb_bunny_squares.at(rd_number);
+      int random_move = neighb_bunny_squares.at(rd_number);
+
       vs.at(grid_position_).RemoveMaleWolf();
       if (vs.at(grid_position_).MaleWolves() < 1) {
         map_tiles.at(grid_position_) &= 0b11111011u;
       }
-      grid_position_ = move_square;
+      grid_position_ = random_move;
       vs.at(grid_position_).AddMaleWolf();
       map_tiles.at(grid_position_) |= 0b00000100u;
       // Eating the bunny
       int i = 0;
       for (auto& bunny : vb) {
-        if (bunny.GridPosition() == move_square) {
-          vs.at(move_square).RemoveBunny();
-          if (vs.at(move_square).Bunnies() < 1) {
-            map_tiles.at(move_square) &= 0b11111110u;
+        if (bunny.GridPosition() == random_move) {
+          vs.at(random_move).RemoveBunny();
+          if (vs.at(random_move).Bunnies() < 1) {
+            map_tiles.at(random_move) &= 0b11111110u;
           }
           vb.erase(vb.begin() + i);
-          fat_ += 1.0;
+          fat_ <= 1 ? fat_ += 1.0 : fat_ = 2.0;
           break;
         }
         ++i;
