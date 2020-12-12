@@ -2,7 +2,6 @@
 // Created by Jakub Molek on 22/10/2020.
 //
 #include <random>
-#include <iostream>
 
 #include "game.h"
 #include "animals.h"
@@ -105,10 +104,17 @@ int FemaleWolf::Move(int columns,
                      std::vector<Square>& vs,
                      std::vector<uint8_t>& map_tiles,
                      std::vector<Bunny>& vb,
-                     std::vector<FemaleWolf>& vfw) {
+                     std::vector<FemaleWolf>& vfw,
+                     bool with_hedge,
+                     std::vector<int>& hedge_area_squares) {
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
+    if (with_hedge) {
+      for (auto& index : hedge_area_squares) {
+        possible_moves.erase(std::remove(possible_moves.begin(), possible_moves.end(), index), possible_moves.end());
+      }
+    }
     std::vector<int> neighb_bunny_squares {};
     bool neighb_bunny = false;
     for (auto& move : possible_moves) {
@@ -186,10 +192,17 @@ int MaleWolf::Move(int columns,
                    std::vector<uint8_t>& map_tiles,
                    std::vector<Bunny>& vb,
                    std::vector<MaleWolf>& vmw,
-                   std::vector<FemaleWolf>& vfw) {
+                   std::vector<FemaleWolf>& vfw,
+                   bool with_hedge,
+                   std::vector<int>& hedge_area_squares) {
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(columns, rows, grid_position_);
+    if (with_hedge) {
+      for (auto& index : hedge_area_squares) {
+        possible_moves.erase(std::remove(possible_moves.begin(), possible_moves.end(), index), possible_moves.end());
+      }
+    }
     bool neighb_bunny = false;
     bool neighb_female_wolf = false;
     std::vector<int> neighb_female_wolf_squares {};

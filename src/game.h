@@ -68,6 +68,23 @@ class Game {
   std::vector<uint8_t> map_tiles;
   /// Font file loaded in the constructor.
   sf::Font font;
+
+  /// PNG image of top/bottom parts of hedge
+  sf::Image hedge_horizontal;
+  /// Texture for top/bottom parts of hedge
+  sf::Texture hedge_h_texture;
+  /// PNG image of left/right parts of hedge
+  sf::Image hedge_vertical;
+  /// Texture for left/right parts of hedge
+  sf::Texture hedge_v_texture;
+  /// Vector containing sprites of the top part of hedge
+  std::vector<sf::Sprite> hedge_top_sprites;
+  /// Vector containing sprites of the bottom part of hedge
+  std::vector<sf::Sprite> hedge_bottom_sprites;
+  /// Vector containing sprites of the left part of hedge
+  std::vector<sf::Sprite> hedge_left_sprites;
+  /// Vector containing sprites of the right part of hedge
+  std::vector<sf::Sprite> hedge_right_sprites;
   /// GraphicalGrid instance. More in GraphicalGrid.
   GraphicalGrid square_map;
 
@@ -79,23 +96,28 @@ class Game {
   std::vector<FemaleWolf> female_wolves_vector{};
   /// Vector containing each Square object
   std::vector<Square> squares_vector{};
+  /// Vector containing indices of squares that are inside the hedge area
+  std::vector<int> hedge_area_squares {};
 
   /// Number of horizontal squares
   int columns_;
   /// Number of vertical squares
   int rows_;
+  /// Determines if a hedge - area accessible exclusively to bunnies - is present
+  bool with_hedge;
 
   ///
   /// This constructor loads the font file as well as the png file that contains all
   /// possible tiles. It initializes objects for each square
   ///
   ///
-  Game(int columns, int rows);
+  Game(int columns, int rows, bool set_hedge = false, int hedge_size = 6, int hedge_x_origin = 5, int hedge_y_origin = 5);
   void CreateBunny(int pos);
   void CreateWolf(int pos, double fat = 1.0);
   void BunnyTurnActions(sf::RenderWindow& window);
   void WolfTurnActions(sf::RenderWindow& window);
   void DrawAnimalsCount(sf::RenderWindow& window);
+  void Drawhedge(sf::RenderWindow& window);
   void SetInitialState();
   void Run();
 };

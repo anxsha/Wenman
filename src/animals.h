@@ -22,7 +22,8 @@ class MaleWolf {
   [[nodiscard]] int MaleWolfId() const;
   int Move(int columns, int rows, std::vector<Square>& vs,
             std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
-            std::vector<MaleWolf>& vmw, std::vector<FemaleWolf>& vfw);
+            std::vector<MaleWolf>& vmw, std::vector<FemaleWolf>& vfw,
+            bool with_hedge, std::vector<int>& hedge_area_squares);
 
   MaleWolf(int pos, std::vector<MaleWolf>& v, double initial_fat = 1.0);
 
@@ -42,7 +43,8 @@ class FemaleWolf {
   int HandleGestation(bool set_pregnancy = false);
   int Move(int columns, int rows, std::vector<Square>& vs,
             std::vector<uint8_t>& map_tiles, std::vector<Bunny>& vb,
-            std::vector<FemaleWolf>& vfw);
+            std::vector<FemaleWolf>& vfw, bool with_hedge,
+            std::vector<int>& hedge_area_squares);
 
   FemaleWolf(int pos, std::vector<FemaleWolf>& v, double initial_fat = 1.0);
 

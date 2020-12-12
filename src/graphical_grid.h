@@ -24,7 +24,7 @@ class GraphicalGrid : public sf::Drawable, public sf::Transformable {
   sf::VertexArray vertices_;
   sf::Texture tileset_;
 
-  virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+  void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
 };
 
