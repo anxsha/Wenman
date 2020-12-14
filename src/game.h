@@ -119,6 +119,7 @@ class Game {
   void DrawAnimalsCount(sf::RenderWindow& window);
   void Drawhedge(sf::RenderWindow& window);
   void SetInitialState();
+  void Freeze(sf::RenderWindow& window, int n);
   void Run();
 };
 

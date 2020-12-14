@@ -103,7 +103,6 @@ void Game::CreateWolf(int pos, double fat) {
   }
 }
 void Game::BunnyTurnActions(sf::RenderWindow& window) {
-  sf::Clock clock;
   for (auto& bunny : bunnies_vector) {
     // 20% chance for the bunny to reproduce
     std::random_device rd;
@@ -121,11 +120,9 @@ void Game::BunnyTurnActions(sf::RenderWindow& window) {
   DrawAnimalsCount(window);
   if (with_hedge) { Drawhedge(window); }
   window.display();
-  while (clock.getElapsedTime().asSeconds() < 3);
-  clock.restart();
+  Freeze(window, 3);
 }
 void Game::WolfTurnActions(sf::RenderWindow& window) {
-  sf::Clock clock;
   std::vector<std::tuple<int, double>> wolves_birth_data {};
 
   for (auto[i, v_size] = std::tuple {0, male_wolves_vector.size()}; i < v_size; ++i) {
@@ -147,10 +144,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (!with_hedge) {} else { Drawhedge(window); }
+  if (with_hedge) { Drawhedge(window); }
   window.display();
-  while (clock.getElapsedTime().asSeconds() < 3);
-  clock.restart();
+  Freeze(window, 3);
 
   for (auto[i, v_size] = std::tuple {0, female_wolves_vector.size()}; i < v_size; ++i) {
     if (female_wolves_vector.at(i).Move(columns_,
@@ -174,10 +170,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (!with_hedge) {} else { Drawhedge(window); }
+  if (with_hedge) { Drawhedge(window); }
   window.display();
-  while (clock.getElapsedTime().asSeconds() < 1);
-  clock.restart();
+  Freeze(window, 1);
 
   for (auto& el : wolves_birth_data) {
     CreateWolf(std::get<0>(el), std::get<1>(el));
@@ -186,10 +181,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (!with_hedge) {} else { Drawhedge(window); }
+  if (with_hedge) { Drawhedge(window); }
   window.display();
-  while (clock.getElapsedTime().asSeconds() < 3);
-  clock.restart();
+  Freeze(window, 3);
 }
 void Game::DrawAnimalsCount(sf::RenderWindow& window) {
   sf::Text text;
@@ -221,18 +215,10 @@ void Game::DrawAnimalsCount(sf::RenderWindow& window) {
   }
 }
 void Game::Drawhedge(sf::RenderWindow& window) {
-  for (auto& sprite : hedge_bottom_sprites) {
-    window.draw(sprite);
-  }
-  for (auto& sprite : hedge_left_sprites) {
-    window.draw(sprite);
-  }
-  for (auto& sprite : hedge_top_sprites) {
-    window.draw(sprite);
-  }
-  for (auto& sprite : hedge_right_sprites) {
-    window.draw(sprite);
-  }
+  for (auto& sprite : hedge_bottom_sprites) { window.draw(sprite); }
+  for (auto& sprite : hedge_left_sprites) { window.draw(sprite); }
+  for (auto& sprite : hedge_top_sprites) { window.draw(sprite); }
+  for (auto& sprite : hedge_right_sprites) { window.draw(sprite); }
 }
 void Game::SetInitialState() {
   CreateWolf(0);
@@ -248,18 +234,25 @@ void Game::SetInitialState() {
   CreateBunny(85);
   CreateBunny(87);
 }
+void Game::Freeze(sf::RenderWindow& window, int n) {
+  sf::Clock clock {};
+  sf::Event event {};
+  while (clock.getElapsedTime().asSeconds() < n) {
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed) { window.close(); }
+    }
+  }
+}
 void Game::Run() {
   sf::RenderWindow window(sf::VideoMode(1200, 842), "Wenman");
   window.setFramerateLimit(3);
-  sf::Clock clock;
 
   SetInitialState();
 
   while (window.isOpen()) {
     sf::Event event {};
     while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
+      if (event.type == sf::Event::Closed) { window.close(); }
     }
     BunnyTurnActions(window);
     WolfTurnActions(window);
