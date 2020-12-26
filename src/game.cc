@@ -6,38 +6,20 @@
 
 #include "game.h"
 
-Square::Square(std::vector<Square>& v) {
-  bunnies_ = 0;
-  male_wolves_ = 0;
-  female_wolves_ = 0;
-  vector_index_ = distance(v.begin(), v.end());
-}
-
-int Square::Bunnies() const { return bunnies_; }
-int Square::MaleWolves() const { return male_wolves_; }
-int Square::FemaleWolves() const { return female_wolves_; }
-int Square::VectorIndex() const { return vector_index_; }
-void Square::AddBunny() { ++bunnies_; }
-void Square::RemoveBunny() { --bunnies_; }
-void Square::AddFemaleWolf() { ++female_wolves_; }
-void Square::RemoveFemaleWolf() { --female_wolves_; }
-void Square::AddMaleWolf() { ++male_wolves_; }
-void Square::RemoveMaleWolf() { --male_wolves_; }
-
 Game::Game(int columns,
            int rows,
            bool set_hedge,
            int hedge_size,
            int hedge_x_origin,
-           int hedge_y_origin) { //TODO   remove possible moves
+           int hedge_y_origin) {
   columns_ = columns;
   rows_ = rows;
-  with_hedge = set_hedge;
+  with_hedge_ = set_hedge;
   map_tiles = std::vector<uint8_t>(rows * columns);
   for (int i = 0; i < map_tiles.size(); ++i) {
     squares_vector.emplace_back(squares_vector);
   }
-  if (with_hedge) {
+  if (with_hedge_) {
     if (!hedge_horizontal.loadFromFile("../resources/hedgeH.png")) {
       std::exit(1);
     }
@@ -118,7 +100,7 @@ void Game::BunnyTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge) { Drawhedge(window); }
+  if (with_hedge_) { Drawhedge(window); }
   window.display();
   Freeze(window, 3);
 }
@@ -126,15 +108,7 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   std::vector<std::tuple<int, double>> wolves_birth_data {};
 
   for (auto[i, v_size] = std::tuple {0, male_wolves_vector.size()}; i < v_size; ++i) {
-    if (male_wolves_vector.at(i).Move(columns_,
-                                      rows_,
-                                      squares_vector,
-                                      map_tiles,
-                                      bunnies_vector,
-                                      male_wolves_vector,
-                                      female_wolves_vector,
-                                      with_hedge,
-                                      hedge_area_squares)) {
+    if (male_wolves_vector.at(i).Move(*this)) {
       --i;
       v_size = male_wolves_vector.size();
     }
@@ -144,19 +118,12 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge) { Drawhedge(window); }
+  if (with_hedge_) { Drawhedge(window); }
   window.display();
   Freeze(window, 3);
 
   for (auto[i, v_size] = std::tuple {0, female_wolves_vector.size()}; i < v_size; ++i) {
-    if (female_wolves_vector.at(i).Move(columns_,
-                                        rows_,
-                                        squares_vector,
-                                        map_tiles,
-                                        bunnies_vector,
-                                        female_wolves_vector,
-                                        with_hedge,
-                                        hedge_area_squares)) {
+    if (female_wolves_vector.at(i).Move(*this)) {
       --i;
       v_size = female_wolves_vector.size();
     } else {
@@ -170,7 +137,7 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge) { Drawhedge(window); }
+  if (with_hedge_) { Drawhedge(window); }
   window.display();
   Freeze(window, 1);
 
@@ -181,7 +148,7 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge) { Drawhedge(window); }
+  if (with_hedge_) { Drawhedge(window); }
   window.display();
   Freeze(window, 3);
 }
