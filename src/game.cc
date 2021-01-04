@@ -1,21 +1,19 @@
 //
 // Created by Jakub Molek on 22/10/2020.
 //
+#include "game.h"
 #include <random>
 #include <string>
-
-#include "game.h"
 
 Game::Game(int columns,
            int rows,
            bool set_hedge,
            int hedge_size,
            int hedge_x_origin,
-           int hedge_y_origin) {
-  columns_ = columns;
-  rows_ = rows;
-  with_hedge_ = set_hedge;
+           int hedge_y_origin) : columns_ {columns}, rows_ {rows}, with_hedge_ {set_hedge} {
+  // Each graph. square needs info about the tile to be loaded dep. on animals
   map_tiles = std::vector<uint8_t>(rows * columns);
+  // Initialize the vector of squares
   for (int i = 0; i < map_tiles.size(); ++i) {
     squares_vector.emplace_back(squares_vector);
   }
@@ -26,18 +24,14 @@ Game::Game(int columns,
     if (!hedge_vertical.loadFromFile("../resources/hedgeV.png")) {
       std::exit(1);
     }
-    if (hedge_x_origin > columns_ - hedge_size + 1) {
-      hedge_x_origin = columns_ - hedge_size + 1;
-    }
-    if (hedge_y_origin > rows_ - hedge_size + 1) {
-      hedge_y_origin = rows_ - hedge_size + 1;
-    }
+    // Prepare vectors of sprites to be drawn onto the window
     hedge_h_texture.loadFromImage(hedge_horizontal);
     hedge_top_sprites = std::vector<sf::Sprite>(hedge_size, sf::Sprite(hedge_h_texture));
     hedge_bottom_sprites = std::vector<sf::Sprite>(hedge_size, sf::Sprite(hedge_h_texture));
     hedge_v_texture.loadFromImage(hedge_vertical);
     hedge_left_sprites = std::vector<sf::Sprite>(hedge_size, sf::Sprite(hedge_v_texture));
     hedge_right_sprites = std::vector<sf::Sprite>(hedge_size, sf::Sprite(hedge_v_texture));
+    // Set the position (+ offset) accordingly for each sprite
     for (int i = 0; i < hedge_size; ++i) {
       hedge_top_sprites[i].setPosition((hedge_x_origin - 1) * 60 - 2 + 60 * i, (hedge_y_origin - 1) * 60 - 8);
     }
@@ -52,6 +46,12 @@ Game::Game(int columns,
       hedge_right_sprites[i].setPosition((hedge_x_origin - 1 + hedge_size) * 60 - 8,
                                          (hedge_y_origin - 1) * 60 - 3 + 60 * i);
     }
+    hedge_area_squares.reserve(hedge_size * hedge_size);
+    for (int i = hedge_y_origin - 1; i < hedge_y_origin - 1 + hedge_size; ++i) {
+      for (int j = hedge_x_origin - 1; j < hedge_x_origin - 1 + hedge_size; ++j) {
+        hedge_area_squares.push_back(columns * i + j);
+      }
+    }
   }
   if (!font.loadFromFile("../resources/font.ttf")) {
     std::exit(1);
@@ -59,13 +59,11 @@ Game::Game(int columns,
   if (!square_map.Load("../resources/tileset1.png", sf::Vector2u(60, 60), map_tiles, columns, rows)) {
     std::exit(1);
   }
-  hedge_area_squares.reserve(hedge_size * hedge_size);
-  for (int i = hedge_y_origin - 1; i < hedge_y_origin - 1 + hedge_size; ++i) {
-    for (int j = hedge_x_origin - 1; j < hedge_x_origin - 1 + hedge_size; ++j) {
-      hedge_area_squares.push_back(columns * i + j);
-    }
-  }
 }
+/*-------------------------------------------------------
+ * To grasp the usage of bitwise operations, head over to
+ * GraphicalGrid's Load function, squares_states param.
+-------------------------------------------------------*/
 void Game::CreateBunny(int pos) {
   bunnies_vector.emplace_back(pos, bunnies_vector);
   squares_vector[pos].AddBunny();
@@ -74,6 +72,7 @@ void Game::CreateBunny(int pos) {
 void Game::CreateWolf(int pos, double fat) {
   std::random_device rd;
   std::uniform_int_distribution<int> distribution(0, 1);
+  // Random sex
   if (distribution(rd)) {
     female_wolves_vector.emplace_back(pos, female_wolves_vector, fat);
     squares_vector[pos].AddFemaleWolf();
@@ -83,6 +82,16 @@ void Game::CreateWolf(int pos, double fat) {
     squares_vector[pos].AddMaleWolf();
     map_tiles[pos] |= 0b00000100u;
   }
+}
+void Game::CreateFemaleWolf(int pos, double fat) {
+  female_wolves_vector.emplace_back(pos, female_wolves_vector, fat);
+  squares_vector[pos].AddFemaleWolf();
+  map_tiles[pos] |= 0b00000010u;
+}
+void Game::CreateMaleWolf(int pos, double fat) {
+  male_wolves_vector.emplace_back(pos, male_wolves_vector, fat);
+  squares_vector[pos].AddMaleWolf();
+  map_tiles[pos] |= 0b00000100u;
 }
 void Game::BunnyTurnActions(sf::RenderWindow& window) {
   for (auto& bunny : bunnies_vector) {
@@ -94,15 +103,16 @@ void Game::BunnyTurnActions(sf::RenderWindow& window) {
     }
   }
   for (auto& bunny : bunnies_vector) {
-    bunny.Move(columns_, rows_, squares_vector, map_tiles);
+    bunny.Move(*this);
   }
+  // Update the graphical window
   square_map.Update(map_tiles);
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge_) { Drawhedge(window); }
+  if (with_hedge_) { DrawHedge(window); }
   window.display();
-  Freeze(window, 3);
+  Freeze(window, 2);
 }
 void Game::WolfTurnActions(sf::RenderWindow& window) {
   std::vector<std::tuple<int, double>> wolves_birth_data {};
@@ -113,15 +123,18 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
       v_size = male_wolves_vector.size();
     }
   }
-
+  // Update the graphical window
   square_map.Update(map_tiles);
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge_) { Drawhedge(window); }
+  if (with_hedge_) { DrawHedge(window); }
   window.display();
-  Freeze(window, 3);
+  Freeze(window, 2);
 
+  // Making a move for every female wolf. If alive, handle gestation.
+  // When HandleGestation returns a 1, append to a vector of tuples
+  // the (position, fat) of the mother
   for (auto[i, v_size] = std::tuple {0, female_wolves_vector.size()}; i < v_size; ++i) {
     if (female_wolves_vector.at(i).Move(*this)) {
       --i;
@@ -137,10 +150,11 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge_) { Drawhedge(window); }
+  if (with_hedge_) { DrawHedge(window); }
   window.display();
   Freeze(window, 1);
 
+  // Create a new wolf for every tuple inserted while handling gestation
   for (auto& el : wolves_birth_data) {
     CreateWolf(std::get<0>(el), std::get<1>(el));
   }
@@ -148,16 +162,18 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.clear();
   window.draw(square_map);
   DrawAnimalsCount(window);
-  if (with_hedge_) { Drawhedge(window); }
+  if (with_hedge_) { DrawHedge(window); }
   window.display();
-  Freeze(window, 3);
+  Freeze(window, 2);
 }
 void Game::DrawAnimalsCount(sf::RenderWindow& window) {
   sf::Text text;
   text.setFont(font);
   text.setCharacterSize(14);
   text.setFillColor(sf::Color::Black);
+  // check each animal type in every square
   for (auto& square : squares_vector) {
+    // if its count therein is greater than 1, draw a number next to the icon
     if (square.Bunnies() > 1) {
       int row = square.VectorIndex() / columns_;
       int col = square.VectorIndex() % columns_;
@@ -181,25 +197,11 @@ void Game::DrawAnimalsCount(sf::RenderWindow& window) {
     }
   }
 }
-void Game::Drawhedge(sf::RenderWindow& window) {
+void Game::DrawHedge(sf::RenderWindow& window) {
   for (auto& sprite : hedge_bottom_sprites) { window.draw(sprite); }
   for (auto& sprite : hedge_left_sprites) { window.draw(sprite); }
   for (auto& sprite : hedge_top_sprites) { window.draw(sprite); }
   for (auto& sprite : hedge_right_sprites) { window.draw(sprite); }
-}
-void Game::SetInitialState() {
-  CreateWolf(0);
-  CreateWolf(279);
-  CreateWolf(20);
-  CreateWolf(275);
-  CreateWolf(40);
-  CreateWolf(5);
-  CreateBunny(50);
-  CreateBunny(150);
-  CreateBunny(184);
-  CreateBunny(190);
-  CreateBunny(85);
-  CreateBunny(87);
 }
 void Game::Freeze(sf::RenderWindow& window, int n) {
   sf::Clock clock {};
@@ -210,12 +212,35 @@ void Game::Freeze(sf::RenderWindow& window, int n) {
     }
   }
 }
-void Game::Run() {
-  sf::RenderWindow window(sf::VideoMode(1200, 842), "Wenman");
+void Game::SetInitialState(const std::vector<int>& bunny_squares,
+                           const std::vector<int>& female_wolf_squares,
+                           const std::vector<int>& male_wolf_squares,
+                           sf::RenderWindow& window) {
+  for (auto& square : bunny_squares) {
+    CreateBunny(square);
+  }
+  for (auto& square : female_wolf_squares) {
+    CreateFemaleWolf(square);
+  }
+  for (auto& square : male_wolf_squares) {
+    CreateMaleWolf(square);
+  }
+
+  square_map.Update(map_tiles);
+  window.clear();
+  window.draw(square_map);
+  DrawAnimalsCount(window);
+  if (with_hedge_) { DrawHedge(window); }
+  window.display();
+  Freeze(window, 3);
+}
+void Game::Run(const std::vector<int>& bunny_squares,
+               const std::vector<int>& female_wolf_squares,
+               const std::vector<int>& male_wolf_squares) {
+  sf::RenderWindow window(sf::VideoMode(columns_ * 60, rows_ * 60 + 2), "Wenman");
   window.setFramerateLimit(3);
 
-  SetInitialState();
-
+  SetInitialState(bunny_squares, female_wolf_squares, male_wolf_squares, window);
   while (window.isOpen()) {
     sf::Event event {};
     while (window.pollEvent(event)) {

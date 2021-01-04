@@ -7,14 +7,28 @@
 
 #include <vector>
 
+// forward declarations
 class Square;
-
+class Game;
+///
+/// The simplest animal, its lifetime does not depend on any resources.
+/// Its move is always random. Can be eaten by a neighbouring wolf.
+/// At every turn, there is a 20% chance a bunny reproduces.
+/// If a hedge-confined area is present, only bunnies can move inside.
+///
 class Bunny {
  public:
-  [[nodiscard]] int GridPosition() const;
-  [[nodiscard]] int BunnyId() const;
-  void Move(int columns, int rows, std::vector<Square>& vs, std::vector<uint8_t>& map_tiles);
-
+  /// Getter for the bunny's position (index of the square)
+  int GridPosition() const;
+  ///
+  /// Calculates correct moves (neighbouring squares) and chooses one randomly.
+  /// Afterwards, updates game's properties based on the move.
+  ///
+  void Move(Game& game);
+  ///
+  /// Initializes the bunny with a chosen position and its id being the current
+  /// size of bunnies' vector (its index therein)
+  ///
   Bunny(int pos, std::vector<Bunny>& v);
 
  private:

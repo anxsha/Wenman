@@ -3,17 +3,22 @@
 //
 
 #include "male_wolf.h"
-
-#include <random>
-
 #include "game.h"
+#include <random>
 
 MaleWolf::MaleWolf(int pos, std::vector<MaleWolf>& v, double initial_fat) : Wolf {pos, static_cast<int>(v.size()),
                                                                                   initial_fat} {}
 int MaleWolf::Move(Game& game) {
+
+  /*-------------------------------------------------------
+   * To grasp the usage of bitwise operations, head over to
+   * GraphicalGrid's Load function, squares_states param.
+  -------------------------------------------------------*/
+
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(game.columns_, game.rows_, grid_position_);
+    // if hedge present, remove bunny-only squares from possible moves
     if (game.with_hedge_) {
       for (auto& index : game.hedge_area_squares) {
         possible_moves.erase(std::remove(possible_moves.begin(), possible_moves.end(), index), possible_moves.end());
@@ -23,6 +28,7 @@ int MaleWolf::Move(Game& game) {
     bool neighb_female_wolf = false;
     std::vector<int> neighb_female_wolf_squares {};
     std::vector<int> neighb_bunny_squares {};
+    // find properly-neighbouring squares with bunnies and female wolves
     for (auto& move : possible_moves) {
       if (game.squares_vector.at(move).Bunnies() > 0) {
         neighb_bunny_squares.push_back(move);
@@ -36,6 +42,7 @@ int MaleWolf::Move(Game& game) {
     if (neighb_bunny) {
       EatNeighbBunny(game, WolfSex::kMale, neighb_bunny_squares);
     } else if (neighb_female_wolf) {
+      // choose a random neighbouring female wolf
       std::random_device rd {};
       std::uniform_int_distribution<int> moves_distribution(0, neighb_female_wolf_squares.size() - 1);
       int rd_number = moves_distribution(rd);
@@ -47,14 +54,16 @@ int MaleWolf::Move(Game& game) {
       grid_position_ = move_square;
       game.squares_vector.at(grid_position_).AddMaleWolf();
       game.map_tiles.at(grid_position_) |= 0b00000100u;
-
+      // Find the female wolf to which the male moved and
+      // evaluate its gestation status.
+      // If not in pregnancy, call HandleGestation with 'true'
+      // to start pregnancy.
       for (auto& fw : game.female_wolves_vector) {
         if (fw.GridPosition() == move_square && !fw.Gestation()) {
           fw.HandleGestation(true);
           break;
         }
       }
-
     } else {
       MakeRandomMove(game, WolfSex::kMale, possible_moves);
     }

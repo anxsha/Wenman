@@ -3,9 +3,6 @@
 //
 
 #include "female_wolf.h"
-
-#include <random>
-
 #include "game.h"
 
 FemaleWolf::FemaleWolf(int pos, std::vector<FemaleWolf>& v, double initial_fat) : Wolf {pos, static_cast<int>(v.size()),
@@ -29,6 +26,7 @@ int FemaleWolf::Move(Game& game) {
   fat_ -= 0.1;
   if (fat_ > 0) {
     std::vector<int> possible_moves = FindNeighbouringSquares(game.columns_, game.rows_, grid_position_);
+    // if hedge present, remove bunny-only squares from possible moves
     if (game.with_hedge_) {
       for (auto& index : game.hedge_area_squares) {
         possible_moves.erase(std::remove(possible_moves.begin(), possible_moves.end(), index), possible_moves.end());
@@ -36,6 +34,7 @@ int FemaleWolf::Move(Game& game) {
     }
     std::vector<int> neighb_bunny_squares {};
     bool neighb_bunny = false;
+    // find properly-neighbouring squares with bunnies
     for (auto& move : possible_moves) {
       if (game.squares_vector.at(move).Bunnies() > 0) {
         neighb_bunny_squares.push_back(move);
@@ -44,7 +43,7 @@ int FemaleWolf::Move(Game& game) {
     }
     if (!neighb_bunny) {
       MakeRandomMove(game, WolfSex::kFemale, possible_moves);
-    } else { // a neighbouring bunny exists -> gets eaten
+    } else {
       EatNeighbBunny(game, WolfSex::kFemale, neighb_bunny_squares);
     }
   } else {

@@ -7,23 +7,31 @@
 
 #include <vector>
 
+///
+/// Finds and returns a vector of all correct neighbours of a square
+/// (i.e. a maximum of 8)
+/// \param size_x number of columns in game
+/// \param size_y number of rows in game
+/// \param index index of the square, for which neighbours are to be found
+/// \return a vector of neighbouring squares
+///
 std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index);
 
 ///
 /// Every object of this class contains information about one assigned
 /// graphical square. It is the source, based on which graphical grid is
-/// generated.
+/// updated.
 ///
 class Square {
  public:
   /// Returns the number of bunnies that occupy this square.
-  [[nodiscard]] int Bunnies() const;
+  int Bunnies() const;
   /// Returns the number of male wolves that occupy this square.
-  [[nodiscard]] int MaleWolves() const;
+  int MaleWolves() const;
   /// Returns the number of female wolves that occupy this square.
-  [[nodiscard]] int FemaleWolves() const;
-  /// Returns the index of this square in Game's square vector that contains them all.
-  [[nodiscard]] int VectorIndex() const;
+  int FemaleWolves() const;
+  /// Returns the index of this square in Game's vector of squares.
+  int VectorIndex() const;
   /// Increments the number of bunnies on this square.
   void AddBunny();
   /// Decrements the number of bunnies on this square.
@@ -37,18 +45,21 @@ class Square {
   /// Decrements the number of male wolves on this square.
   void RemoveMaleWolf();
   ///
-  /// The constructor sets the number of all animals on this square to 0.
+  /// This constructor sets the number of all animals on this square to 0.
   /// Receives the Game's vector which consists of all squares as a parameter to identify
   /// its index therein.
   ///
-  explicit Square(std::vector<Square>& v);
+  explicit Square(const std::vector<Square>& v);
 
  private:
-  int bunnies_;   ///< Number of Bunnies present on that square
-  int male_wolves_;   ///< Number of male wolves present on that square
-  int female_wolves_;   ///< Number of female wolves present on that square
-  int vector_index_;    ///< Number identifying that square's index in the game's grid vector
-
+  /// Number of Bunnies present on that square
+  int bunnies_;
+  /// Number of male wolves present on that square
+  int male_wolves_;
+  /// Number of female wolves present on that square
+  int female_wolves_;
+  /// Number identifying that square's index in the game's vector
+  int vector_index_;
 };
 
 #endif //WENMAN_SRC_SQUARE_H_

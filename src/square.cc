@@ -52,13 +52,10 @@ std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index) {
   return v;
 }
 
-Square::Square(std::vector<Square>& v) {
-  bunnies_ = 0;
-  male_wolves_ = 0;
-  female_wolves_ = 0;
-  vector_index_ = distance(v.begin(), v.end());
-}
-
+Square::Square(const std::vector<Square>& v) : bunnies_ {0},
+                                               male_wolves_ {0},
+                                               female_wolves_ {0},
+                                               vector_index_ {static_cast<int>(distance(v.begin(), v.end()))} {}
 int Square::Bunnies() const { return bunnies_; }
 int Square::MaleWolves() const { return male_wolves_; }
 int Square::FemaleWolves() const { return female_wolves_; }
