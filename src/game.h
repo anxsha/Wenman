@@ -5,12 +5,12 @@
 #ifndef WENMAN_SRC_GAME_H_
 #define WENMAN_SRC_GAME_H_
 
+#include <TGUI/TGUI.hpp>
 #include "graphical_grid.h"
 #include "square.h"
 #include "bunny.h"
 #include "male_wolf.h"
 #include "female_wolf.h"
-#include <SFML/Graphics.hpp>
 #include <vector>
 
 
@@ -86,8 +86,8 @@ class Game {
   void CreateMaleWolf(int pos, double fat = 1.0);
   ///
   /// Gives each bunny a 20% chance to reproduce. If succeeded,
-  /// creates a new bunny instantly. Then every bunny performs
-  /// a random move and the game window is updated.
+  /// creates a new bunny instantly. Then every bunny (except new-born ones)
+  /// makes a random move and the game window is updated.
   ///
   void BunnyTurnActions(sf::RenderWindow& window);
   ///

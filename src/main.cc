@@ -1,5 +1,5 @@
-#include "../lib/termcolor.hpp"
 #include "game.h"
+#include "../lib/termcolor.hpp"
 #include <iostream>
 #include <iomanip>
 

@@ -29,7 +29,7 @@ class MaleWolf : public Wolf {
   /// \param game Game
   /// \return 1 if fat reached 0 -> wolf died and is deleted, 0 else
   ///
-  int Move(Game& game);
+  int Move(Game& game) override;
 };
 
 #endif //WENMAN_SRC_MALE_WOLF_H_

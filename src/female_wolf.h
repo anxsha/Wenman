@@ -41,7 +41,7 @@ class FemaleWolf : public Wolf {
   /// \param game Game
   /// \return 1 if fat reached 0 -> wolf died and is deleted, 0 else
   ///
-  int Move(Game& game);
+  int Move(Game& game) override;
  private:
   /// =2 means gestation started this turn, 1 -> prev. turn, 0 -> no pregnancy
   int gestation_;

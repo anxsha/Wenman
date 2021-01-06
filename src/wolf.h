@@ -49,6 +49,7 @@ class Wolf {
   /// Handles squares' properties.
   ///
   void MakeRandomMove(Game& game, const WolfSex& sex, const std::vector<int>& possible_moves);
+  virtual int Move(Game& game) = 0;
  protected:
   ///
   /// Fat level of a wolf. Default initial value is 1.0. Every move
