@@ -24,7 +24,7 @@ int main() {
     std::cout << termcolor::on_cyan << termcolor::yellow << "Welcome to the Wenman simulation\n";
     std::cout << termcolor::yellow << "Choose the size of the field\n"
                                       "Columns <6-14>\n"
-                                      "Rows <6-20>\n";
+                                      "Rows <6-17>\n";
     std::cout << termcolor::blue << "Columns: ";
     std::cin >> cols;
     while (std::cin.fail() || cols > 14 || cols < 6) {
@@ -36,7 +36,7 @@ int main() {
     }
     std::cout << termcolor::blue << "Rows: ";
     std::cin >> rows;
-    while (std::cin.fail() || rows > 20 || rows < 6) {
+    while (std::cin.fail() || rows > 17 || rows < 6) {
       std::cin.clear();
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cout << termcolor::red << "Incorrect input, please try again\n";

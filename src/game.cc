@@ -93,7 +93,7 @@ void Game::CreateMaleWolf(int pos, double fat) {
   squares_vector.at(pos).AddMaleWolf();
   map_tiles.at(pos) |= 0b00000100u;
 }
-void Game::BunnyTurnActions(sf::RenderWindow& window) {
+void Game::BunnyTurnActions(sf::RenderWindow& window, tgui::Gui& gui) {
   std::vector<int> bunnies_birth_data{};
   for (auto& bunny : bunnies_vector) {
     // 20% chance for the bunny to reproduce
@@ -115,10 +115,11 @@ void Game::BunnyTurnActions(sf::RenderWindow& window) {
   window.draw(square_map);
   DrawAnimalsCount(window);
   if (with_hedge_) { DrawHedge(window); }
+  gui.draw();
   window.display();
-  Freeze(window, 2);
+  Freeze(window, 2, gui);
 }
-void Game::WolfTurnActions(sf::RenderWindow& window) {
+void Game::WolfTurnActions(sf::RenderWindow& window, tgui::Gui& gui) {
   std::vector<std::tuple<int, double>> wolves_birth_data{};
 
   for (auto[i, v_size] = std::tuple{0, male_wolves_vector.size()}; i < v_size; ++i) {
@@ -133,8 +134,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.draw(square_map);
   DrawAnimalsCount(window);
   if (with_hedge_) { DrawHedge(window); }
+  gui.draw();
   window.display();
-  Freeze(window, 2);
+  Freeze(window, 2, gui);
 
   // Making a move for every female wolf. If alive, handle gestation.
   // When HandleGestation returns a 1, append to a vector of tuples
@@ -155,8 +157,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.draw(square_map);
   DrawAnimalsCount(window);
   if (with_hedge_) { DrawHedge(window); }
+  gui.draw();
   window.display();
-  Freeze(window, 1);
+  Freeze(window, 1, gui);
 
   // Create a new wolf for every tuple inserted while handling gestation
   for (auto& el : wolves_birth_data) {
@@ -167,8 +170,9 @@ void Game::WolfTurnActions(sf::RenderWindow& window) {
   window.draw(square_map);
   DrawAnimalsCount(window);
   if (with_hedge_) { DrawHedge(window); }
+  gui.draw();
   window.display();
-  Freeze(window, 2);
+  Freeze(window, 2, gui);
 }
 void Game::DrawAnimalsCount(sf::RenderWindow& window) {
   sf::Text text;
@@ -207,19 +211,45 @@ void Game::DrawHedge(sf::RenderWindow& window) {
   for (auto& sprite : hedge_top_sprites) { window.draw(sprite); }
   for (auto& sprite : hedge_right_sprites) { window.draw(sprite); }
 }
-void Game::Freeze(sf::RenderWindow& window, int n) {
+void Game::Freeze(sf::RenderWindow& window, int n, tgui::Gui& gui) {
   sf::Clock clock{};
   sf::Event event{};
   while (clock.getElapsedTime().asSeconds() < n) {
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) { window.close(); }
+      gui.handleEvent(event);
+      if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left) {
+          sf::Vector2i position = sf::Mouse::getPosition(window);
+          if (window.hasFocus()) {
+            // assert that the mouse was clicked on the window
+            if (position.x > 0 && position.x < window.getSize().x && position.y > 0
+                && position.y < window.getSize().y - 30) {
+              // calculate the chosen square and find the text box
+              int clicked_square = ((position.y / 60) * window.getSize().x / 60) + position.x / 60;
+              auto text_box = gui.get<tgui::TextBox>("text_box");
+              // assert a nullptr was not returned, i.e. the gui returned the widget
+              if (text_box) {
+                text_box->setText(std::to_string(clicked_square));
+                window.clear();
+                window.draw(square_map);
+                DrawAnimalsCount(window);
+                if (with_hedge_) { DrawHedge(window); }
+                gui.draw();
+                window.display();
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
 void Game::SetInitialState(const std::vector<int>& bunny_squares,
                            const std::vector<int>& female_wolf_squares,
                            const std::vector<int>& male_wolf_squares,
-                           sf::RenderWindow& window) {
+                           sf::RenderWindow& window,
+                           tgui::Gui& gui) {
   for (auto& square : bunny_squares) {
     CreateBunny(square);
   }
@@ -235,22 +265,141 @@ void Game::SetInitialState(const std::vector<int>& bunny_squares,
   window.draw(square_map);
   DrawAnimalsCount(window);
   if (with_hedge_) { DrawHedge(window); }
+  gui.draw();
   window.display();
-  Freeze(window, 3);
+  Freeze(window, 3, gui);
 }
 void Game::Run(const std::vector<int>& bunny_squares,
                const std::vector<int>& female_wolf_squares,
                const std::vector<int>& male_wolf_squares) {
-  sf::RenderWindow window(sf::VideoMode(columns_ * 60, rows_ * 60 + 2), "Wenman");
-  window.setFramerateLimit(3);
+  sf::RenderWindow
+      window(sf::VideoMode(columns_ * 60, rows_ * 60 + 2 + 30), "Wenman", sf::Style::Titlebar | sf::Style::Close);
+  window.setFramerateLimit(5);
+  tgui::Gui gui(window);
+  LoadWidgets(gui, *this, window);
 
-  SetInitialState(bunny_squares, female_wolf_squares, male_wolf_squares, window);
+  SetInitialState(bunny_squares, female_wolf_squares, male_wolf_squares, window, gui);
   while (window.isOpen()) {
     sf::Event event{};
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) { window.close(); }
+      gui.handleEvent(event);
+      if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left) {
+          sf::Vector2i position = sf::Mouse::getPosition(window);
+          if (window.hasFocus()) {
+            // assert that the mouse was clicked on the window
+            if (position.x > 0 && position.x < window.getSize().x && position.y > 0
+                && position.y < window.getSize().y - 30) {
+              // calculate the chosen square and find the text box
+              int clicked_square = ((position.y / 60) * window.getSize().x / 60) + position.x / 60;
+              auto text_box = gui.get<tgui::TextBox>("text_box");
+              // assert a nullptr was not returned, i.e. the gui returned the widget
+              if (text_box) {
+                text_box->setText(std::to_string(clicked_square));
+                window.clear();
+                window.draw(square_map);
+                DrawAnimalsCount(window);
+                if (with_hedge_) { DrawHedge(window); }
+                gui.draw();
+                window.display();
+              }
+            }
+          }
+        }
+      }
     }
-    BunnyTurnActions(window);
-    WolfTurnActions(window);
+    BunnyTurnActions(window, gui);
+    WolfTurnActions(window, gui);
   }
+}
+struct BtnConnectParams {
+  tgui::Gui* gui;
+  Game* game;
+  sf::RenderWindow* window;
+};
+void BunnyBtnPressed(BtnConnectParams connect_params) {
+  auto gui = connect_params.gui;
+  auto game = connect_params.game;
+  auto window = connect_params.window;
+  auto text_box = gui->get<tgui::TextBox>("text_box");
+  std::string text = text_box->getText();
+  int selected_square = std::stoi(text);
+  game->CreateBunny(selected_square);
+  window->clear();
+  window->draw(game->square_map);
+  game->DrawAnimalsCount(*window);
+  if (game->with_hedge_) { game->DrawHedge(*window); }
+  gui->draw();
+  window->display();
+}
+void FWolfBtnPressed(BtnConnectParams connect_params) {
+  auto gui = connect_params.gui;
+  auto game = connect_params.game;
+  auto window = connect_params.window;
+  auto text_box = gui->get<tgui::TextBox>("text_box");
+  std::string text = text_box->getText();
+  int selected_square = std::stoi(text);
+  game->CreateFemaleWolf(selected_square);
+  window->clear();
+  window->draw(game->square_map);
+  game->DrawAnimalsCount(*window);
+  if (game->with_hedge_) { game->DrawHedge(*window); }
+  gui->draw();
+  window->display();
+}
+void MWolfBtnPressed(BtnConnectParams connect_params) {
+  auto gui = connect_params.gui;
+  auto game = connect_params.game;
+  auto window = connect_params.window;
+  auto text_box = gui->get<tgui::TextBox>("text_box");
+  std::string text = text_box->getText();
+  int selected_square = std::stoi(text);
+  game->CreateMaleWolf(selected_square);
+  window->clear();
+  window->draw(game->square_map);
+  game->DrawAnimalsCount(*window);
+  if (game->with_hedge_) { game->DrawHedge(*window); }
+  gui->draw();
+  window->display();
+}
+void LoadWidgets(tgui::Gui& gui, Game& game, sf::RenderWindow& window) {
+  BtnConnectParams connect_params{};
+  connect_params.gui = &gui;
+  connect_params.game = &game;
+  connect_params.window = &window;
+
+  auto square_number_box = tgui::TextBox::create();
+  square_number_box->setSize(50, 30);
+  square_number_box->setPosition(0, window.getSize().y - 30);
+  square_number_box->getRenderer()->setOpacity(0.6);
+  square_number_box->getRenderer()->setTextColor(sf::Color::Black);
+  square_number_box->setReadOnly();
+  square_number_box->setText("0");
+
+  auto create_bunny_btn = tgui::Button::create("Bunny");
+  create_bunny_btn->setSize((window.getSize().x - 50) / 3, 30);
+  create_bunny_btn->setPosition(50, window.getSize().y - 30);
+  create_bunny_btn->getRenderer()->setOpacity(0.6);
+  create_bunny_btn->getRenderer()->setTextColor(sf::Color::Black);
+  create_bunny_btn->connect("pressed", BunnyBtnPressed, connect_params);
+
+  auto create_f_wolf_btn = tgui::Button::create("Female Wolf");
+  create_f_wolf_btn->setSize((window.getSize().x - 50) / 3, 30);
+  create_f_wolf_btn->setPosition(50 + ((window.getSize().x - 50) / 3), window.getSize().y - 30);
+  create_f_wolf_btn->getRenderer()->setOpacity(0.6);
+  create_f_wolf_btn->getRenderer()->setTextColor(sf::Color::Black);
+  create_f_wolf_btn->connect("pressed", FWolfBtnPressed, connect_params);
+
+  auto create_m_wolf_btn = tgui::Button::create("Male Wolf");
+  create_m_wolf_btn->setSize((window.getSize().x - 50) / 3, 30);
+  create_m_wolf_btn->setPosition(50 + (((window.getSize().x - 50) / 3) * 2), window.getSize().y - 30);
+  create_m_wolf_btn->getRenderer()->setOpacity(0.6);
+  create_m_wolf_btn->getRenderer()->setTextColor(sf::Color::Black);
+  create_m_wolf_btn->connect("pressed", MWolfBtnPressed, connect_params);
+
+  gui.add(square_number_box, "text_box");
+  gui.add(create_bunny_btn);
+  gui.add(create_f_wolf_btn);
+  gui.add(create_m_wolf_btn);
 }

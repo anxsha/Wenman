@@ -13,7 +13,6 @@
 #include "female_wolf.h"
 #include <vector>
 
-
 ///
 /// The main class of the program. Possesses methods required for creating
 /// all the animals onto a square and those that aggregate their
@@ -51,15 +50,15 @@ class Game {
   GraphicalGrid square_map;
 
   /// Vector containing each Bunny object
-  std::vector<Bunny> bunnies_vector {};
+  std::vector<Bunny> bunnies_vector{};
   /// Vector containing each Male Wolf object
-  std::vector<MaleWolf> male_wolves_vector {};
+  std::vector<MaleWolf> male_wolves_vector{};
   /// Vector containing each Female Wolf object
-  std::vector<FemaleWolf> female_wolves_vector {};
+  std::vector<FemaleWolf> female_wolves_vector{};
   /// Vector containing each Square object
-  std::vector<Square> squares_vector {};
+  std::vector<Square> squares_vector{};
   /// Vector containing indices of squares that are inside the hedge area
-  std::vector<int> hedge_area_squares {};
+  std::vector<int> hedge_area_squares{};
 
   /// Number of horizontal squares
   int columns_;
@@ -89,13 +88,13 @@ class Game {
   /// creates a new bunny instantly. Then every bunny (except new-born ones)
   /// makes a random move and the game window is updated.
   ///
-  void BunnyTurnActions(sf::RenderWindow& window);
+  void BunnyTurnActions(sf::RenderWindow& window, tgui::Gui& gui);
   ///
   /// At first, the male wolves' moves are made and the squares are updated.
   /// Next the female wolves' moves and gestation-handling.
   /// After each event comes a short break.
   ///
-  void WolfTurnActions(sf::RenderWindow& window);
+  void WolfTurnActions(sf::RenderWindow& window, tgui::Gui& gui);
   ///
   /// Checks each square whether the count of one animal type present therein
   /// is greater than 1. If so, writes the number next to the animal icon.
@@ -107,12 +106,13 @@ class Game {
   /// Makes the app sleep for a given number of seconds,
   /// but keeps event polling - allowing to close the window.
   ///
-  void Freeze(sf::RenderWindow& window, int n);
+  void Freeze(sf::RenderWindow& window, int n, tgui::Gui& gui);
   /// Creates the animals that were chosen in the CLI and updates the window.
   void SetInitialState(const std::vector<int>& bunny_squares,
                        const std::vector<int>& female_wolf_squares,
                        const std::vector<int>& male_wolf_squares,
-                       sf::RenderWindow& window);
+                       sf::RenderWindow& window,
+                       tgui::Gui& gui);
   ///
   /// Initializes the game window.
   /// Receives 3 vectors of squares' indices for the animals to be created onto
@@ -124,5 +124,29 @@ class Game {
            const std::vector<int>& female_wolf_squares,
            const std::vector<int>& male_wolf_squares);
 };
+
+///
+/// This struct consists of pointers to the GUI, app's window and Game objects.
+/// It is used to pass these objects to BtnPressed functions that are
+/// connected with appropriate buttons.
+///
+struct BtnConnectParams;
+/// Initializes the GUI - buttons and the text box displaying the chosen square.
+void LoadWidgets(tgui::Gui& gui, Game& game, sf::RenderWindow& window);
+///
+/// Called when the Bunny button is clicked. Creates a bunny on the chosen square
+/// and refreshes the window.
+///
+void BunnyBtnPressed(BtnConnectParams connect_params);
+///
+/// Called when the Female Wolf button is clicked. Creates a female wolf
+/// on the chosen square and refreshes the window.
+///
+void FWolfBtnPressed(BtnConnectParams connect_params);
+///
+/// Called when the Male Wolf button is clicked. Creates a male wolf
+/// on the chosen square and refreshes the window.
+///
+void MWolfBtnPressed(BtnConnectParams connect_params);
 
 #endif //WENMAN_SRC_GAME_H_
