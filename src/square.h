@@ -25,13 +25,13 @@ std::vector<int> FindNeighbouringSquares(int size_x, int size_y, int index);
 class Square {
  public:
   /// Returns the number of bunnies that occupy this square.
-  int Bunnies() const;
+  [[nodiscard]] int Bunnies() const;
   /// Returns the number of male wolves that occupy this square.
-  int MaleWolves() const;
+  [[nodiscard]] int MaleWolves() const;
   /// Returns the number of female wolves that occupy this square.
-  int FemaleWolves() const;
+  [[nodiscard]] int FemaleWolves() const;
   /// Returns the index of this square in Game's vector of squares.
-  int VectorIndex() const;
+  [[nodiscard]] int VectorIndex() const;
   /// Increments the number of bunnies on this square.
   void AddBunny();
   /// Decrements the number of bunnies on this square.

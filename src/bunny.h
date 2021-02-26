@@ -19,7 +19,7 @@ class Game;
 class Bunny {
  public:
   /// Getter for the bunny's position (index of the square)
-  int GridPosition() const;
+  [[nodiscard]] int GridPosition() const;
   ///
   /// Calculates correct moves (neighbouring squares) and chooses one randomly.
   /// Afterwards, updates game's properties based on the move.

@@ -22,7 +22,7 @@ class FemaleWolf : public Wolf {
   ///
   FemaleWolf(int pos, std::vector<FemaleWolf>& v, double initial_fat);
   /// Gestation status getter
-  int Gestation() const;
+  [[nodiscard]] int Gestation() const;
   ///
   /// Changes the current gestation status based on its value
   /// (when =2, decrement, =1 -> decrement and return 1 signalling completion).

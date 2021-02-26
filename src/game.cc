@@ -317,6 +317,7 @@ struct BtnConnectParams {
   tgui::Gui* gui;
   Game* game;
   sf::RenderWindow* window;
+
 };
 void BunnyBtnPressed(BtnConnectParams connect_params) {
   auto gui = connect_params.gui;
@@ -340,7 +341,9 @@ void FWolfBtnPressed(BtnConnectParams connect_params) {
   auto text_box = gui->get<tgui::TextBox>("text_box");
   std::string text = text_box->getText();
   int selected_square = std::stoi(text);
-  game->CreateFemaleWolf(selected_square);
+  // check if square is not in the hedge-confined area
+  if (!(std::find(game->hedge_area_squares.begin(), game->hedge_area_squares.end(), selected_square)
+      != game->hedge_area_squares.end())) { game->CreateFemaleWolf(selected_square); }
   window->clear();
   window->draw(game->square_map);
   game->DrawAnimalsCount(*window);
@@ -355,7 +358,9 @@ void MWolfBtnPressed(BtnConnectParams connect_params) {
   auto text_box = gui->get<tgui::TextBox>("text_box");
   std::string text = text_box->getText();
   int selected_square = std::stoi(text);
-  game->CreateMaleWolf(selected_square);
+  // check if square is not in the hedge-confined area
+  if (!(std::find(game->hedge_area_squares.begin(), game->hedge_area_squares.end(), selected_square)
+      != game->hedge_area_squares.end())) { game->CreateMaleWolf(selected_square); }
   window->clear();
   window->draw(game->square_map);
   game->DrawAnimalsCount(*window);

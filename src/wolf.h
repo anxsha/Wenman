@@ -26,11 +26,11 @@ class Wolf {
   ///
   Wolf (int pos, int v_size, double initial_fat);
   /// Fat level getter
-  double Fat() const;
+  [[nodiscard]] double Fat() const;
   /// Grid position getter
-  int GridPosition() const;
+  [[nodiscard]] int GridPosition() const;
   /// Wolf's id getter
-  int Id() const;
+  [[nodiscard]] int Id() const;
   ///
   /// Chooses one random bunny from the possible options
   /// and handles the move by properly managing
