@@ -3,7 +3,7 @@
 [*Wenman*](https://en.wikipedia.org/wiki/Wolf_Island) is a simple app that simulates a trivial ecosystem consisting
 of a population of bunnies and wolves.
 
-![example image](../img/example1.PNG "Example image")
+![example image](resources/readme/example1.PNG "Example image")
 
 ## Rules
 ***
@@ -41,18 +41,18 @@ After running the executable, it is needed to define some properties in the GUI.
 When choosing hedge's position, the squares are numbered *1 : x/y*.  
 The sliders automatically refresh the range so that it is impossible to e.g. place the hedge outside the grid.
 
-![example image](../img/example2.PNG "Example image")
+![example image](resources/readme/example2.PNG "Example image")
 
 The outcome:
 
-![example image](../img/example3.PNG "Example image")
+![example image](resources/readme/example3.PNG "Example image")
 
 The text box on the left displays the currently chosen square to add animals onto.  
 Clicking on an animal label spawns it there.  
 Trying to put a wolf onto an invalid square does not result in anything.
 
 
-![example image](../img/example4.PNG "Example image")
+![example image](resources/readme/example4.PNG "Example image")
 
 ## License
 ***
